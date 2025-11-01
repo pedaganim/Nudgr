@@ -1,0 +1,24 @@
+.DS_Store
+.idea/
+.vscode/
+*.iml
+.env
+
+# Java/Gradle
+.gradle/
+build/
+out/
+*/build/
+*/out/
+
+# Jars & distributions
+*.jar
+*.war
+*.ear
+*.zip
+
+# Logs
+*.log
+
+# OS
+Thumbs.db
