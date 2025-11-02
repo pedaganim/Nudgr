@@ -2,13 +2,12 @@ package com.example.invoice.service;
 
 import com.example.invoice.common.MoneyUtils;
 import com.example.invoice.model.Invoice;
-import com.example.invoice.model.InvoiceItem;
 import com.example.invoice.model.InvoiceStatus;
 import com.example.invoice.model.Payment;
-import com.example.invoice.customer.CustomerRepository;
 import com.example.invoice.model.Customer;
-import com.example.invoice.invoice.InvoiceRepository;
-import com.example.invoice.invoice.PaymentRepository;
+import com.example.invoice.repository.CustomerRepository;
+import com.example.invoice.repository.InvoiceRepository;
+import com.example.invoice.repository.PaymentRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;

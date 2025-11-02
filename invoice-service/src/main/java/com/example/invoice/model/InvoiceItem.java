@@ -2,6 +2,7 @@ package com.example.invoice.model;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "invoice_item")
@@ -12,6 +13,7 @@ public class InvoiceItem {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "invoice_id")
+    @JsonIgnore
     private Invoice invoice;
 
     @Column(nullable = false)

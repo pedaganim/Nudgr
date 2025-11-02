@@ -4,7 +4,7 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
-import com.example.invoice.invoice.InvoiceRepository;
+import com.example.invoice.repository.InvoiceRepository;
 import com.example.invoice.model.Invoice;
 
 import java.io.ByteArrayOutputStream;
