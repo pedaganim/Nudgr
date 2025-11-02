@@ -3,9 +3,11 @@ package com.example.invoice.controller;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.example.invoice.repository.CustomerRepository;
 import com.example.invoice.model.Customer;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/customers")
@@ -20,8 +22,14 @@ public class CustomerController {
     public Customer get(@PathVariable Long id) { return repo.findById(id).orElseThrow(); }
 
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public Customer create(@RequestBody Customer c) { return repo.save(c); }
+    public ResponseEntity<Customer> create(@RequestBody Customer c) {
+        Optional<Customer> existing = repo.findByEmail(c.getEmail());
+        if (existing.isPresent()) {
+            return ResponseEntity.ok(existing.get());
+        }
+        Customer saved = repo.save(c);
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+    }
 
     @PutMapping("/{id}")
     public Customer update(@PathVariable Long id, @RequestBody Customer c) {
@@ -32,7 +40,7 @@ public class CustomerController {
         existing.setBillingAddress(c.getBillingAddress());
         existing.setShippingAddress(c.getShippingAddress());
         existing.setTaxNumber(c.getTaxNumber());
-        return existing;
+        return repo.save(existing);
     }
 
     @DeleteMapping("/{id}")

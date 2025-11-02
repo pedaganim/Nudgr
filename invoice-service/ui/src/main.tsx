@@ -6,6 +6,7 @@ import { CustomersPage } from './pages/CustomersPage'
 import { InvoiceDetailPage } from './pages/invoices/InvoiceDetailPage'
 import { InvoiceCreatePage } from './pages/invoices/InvoiceCreatePage'
 import { InvoiceEditPage } from './pages/invoices/InvoiceEditPage'
+import { InvoiceDeletePage } from './pages/invoices/InvoiceDeletePage'
 import { CustomerDetailPage } from './pages/customers/CustomerDetailPage'
 import { CustomerCreatePage } from './pages/customers/CustomerCreatePage'
 import { CustomerEditPage } from './pages/customers/CustomerEditPage'
@@ -23,6 +24,7 @@ const router = createBrowserRouter([
       { path: 'invoices/new', element: <InvoiceCreatePage /> },
       { path: 'invoices/:id', element: <InvoiceDetailPage /> },
       { path: 'invoices/:id/edit', element: <InvoiceEditPage /> },
+      { path: 'invoices/:id/delete', element: <InvoiceDeletePage /> },
       { path: 'customers', element: <CustomersPage /> },
       { path: 'customers/new', element: <CustomerCreatePage /> },
       { path: 'customers/:id', element: <CustomerDetailPage /> },

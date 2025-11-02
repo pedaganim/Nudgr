@@ -2,6 +2,7 @@ package com.example.invoice.model;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
@@ -18,6 +19,12 @@ public class InvoiceItem {
 
     @Column(nullable = false)
     private String description;
+
+    @Column(name = "service_date")
+    private LocalDate serviceDate;
+
+    @Column(name = "product_or_service")
+    private String productOrService;
 
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal quantity;
@@ -37,6 +44,10 @@ public class InvoiceItem {
     public void setInvoice(Invoice invoice) { this.invoice = invoice; }
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+    public LocalDate getServiceDate() { return serviceDate; }
+    public void setServiceDate(LocalDate serviceDate) { this.serviceDate = serviceDate; }
+    public String getProductOrService() { return productOrService; }
+    public void setProductOrService(String productOrService) { this.productOrService = productOrService; }
     public BigDecimal getQuantity() { return quantity; }
     public void setQuantity(BigDecimal quantity) { this.quantity = quantity; }
     public BigDecimal getUnitPrice() { return unitPrice; }

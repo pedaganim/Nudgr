@@ -41,6 +41,8 @@ public class InvoiceService {
     public Invoice create(Invoice invoice) {
         Customer c = customerRepository.findById(invoice.getCustomer().getId()).orElseThrow();
         invoice.setCustomer(c);
+        // Always assign a new 8-digit invoice number on creation
+        invoice.setInvoiceNumber(numberGenerator.nextNumber());
         invoice.getItems().forEach(i -> {
             i.setInvoice(invoice);
             var line = MoneyUtils.mul(i.getQuantity(), i.getUnitPrice());
@@ -80,7 +82,7 @@ public class InvoiceService {
     public Invoice finalizeInvoice(Long id) {
         Invoice inv = invoiceRepository.findById(id).orElseThrow();
         if (inv.getStatus() == InvoiceStatus.DRAFT) {
-            inv.setInvoiceNumber(numberGenerator.nextNumber());
+            // Number is generated at create-time; do not change here
             inv.setStatus(InvoiceStatus.SENT);
             inv.setUpdatedAt(Instant.now());
         }

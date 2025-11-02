@@ -36,44 +36,72 @@ export const InvoicesPage: React.FC = () => {
 
   return (
     <div>
-      <h2>Invoices</h2>
-      <div style={{ marginBottom: 12 }}>
-        <button onClick={() => navigate('/invoices/new')}>New Invoice</button>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-semibold">Invoices</h2>
+        <button
+          onClick={() => navigate('/invoices/new')}
+          className="bg-blue-600 text-white px-3 py-1.5 rounded-md hover:bg-blue-700"
+        >
+          New Invoice
+        </button>
       </div>
       {loading && <div>Loading…</div>}
       {!loading && (
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Number</th>
-              <th>Status</th>
-              <th>Total</th>
-              <th>PDF</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {invoices.map(inv => (
-              <tr key={inv.id}>
-                <td>{inv.id}</td>
-                <td><Link to={`/invoices/${inv.id}`}>{inv.invoiceNumber || 'DRAFT'}</Link></td>
-                <td>{inv.status}</td>
-                <td>{inv.total}</td>
-                <td>
-                  <a href={`/api/invoices/${inv.id}/pdf`} target="_blank" rel="noreferrer">Download</a>
-                </td>
-                <td>
-                  <Link to={`/invoices/${inv.id}/edit`}>Edit</Link>
-                  {' | '}
-                  <button onClick={() => onDelete(inv.id)} disabled={deletingId === inv.id}>
-                    {deletingId === inv.id ? 'Deleting…' : 'Delete'}
-                  </button>
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full border text-sm">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="border px-3 py-2 text-left">ID</th>
+                <th className="border px-3 py-2 text-left">Number</th>
+                <th className="border px-3 py-2 text-left">Status</th>
+                <th className="border px-3 py-2 text-left">Total</th>
+                <th className="border px-3 py-2 text-left">PDF</th>
+                <th className="border px-3 py-2 text-left">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {invoices.map(inv => (
+                <tr key={inv.id} className="odd:bg-white even:bg-gray-50">
+                  <td className="border px-3 py-2">{inv.id}</td>
+                  <td className="border px-3 py-2">
+                    <Link
+                      to={`/invoices/${inv.id}`}
+                      className="text-blue-600 underline underline-offset-4 hover:text-blue-800 font-medium"
+                    >
+                      {inv.invoiceNumber || 'DRAFT'}
+                    </Link>
+                  </td>
+                  <td className="border px-3 py-2">{inv.status}</td>
+                  <td className="border px-3 py-2">{inv.total}</td>
+                  <td className="border px-3 py-2">
+                    <a
+                      href={`/api/invoices/${inv.id}/pdf`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center px-2 py-1 rounded border border-gray-300 hover:bg-gray-50"
+                    >
+                      Download
+                    </a>
+                  </td>
+                  <td className="border px-3 py-2 space-x-2">
+                    <Link
+                      to={`/invoices/${inv.id}/edit`}
+                      className="inline-flex items-center px-2 py-1 rounded border border-gray-300 hover:bg-gray-50"
+                    >
+                      Edit
+                    </Link>
+                    <Link
+                      to={`/invoices/${inv.id}/delete`}
+                      className="inline-flex items-center px-2 py-1 rounded bg-red-600 hover:bg-red-700 text-white"
+                    >
+                      Delete
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   )

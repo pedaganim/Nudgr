@@ -6,6 +6,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "invoice")
@@ -37,6 +38,22 @@ public class Invoice {
     @Column(columnDefinition = "text")
     private String notes;
 
+    @Column(name = "billing_address", columnDefinition = "text")
+    private String billingAddress;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "terms")
+    private Terms terms;
+
+    @Column(name = "tags")
+    private String tags;
+
+    @Column(name = "message_on_invoice", columnDefinition = "text")
+    private String messageOnInvoice;
+
+    @Column(name = "message_on_statement", columnDefinition = "text")
+    private String messageOnStatement;
+
     @Column(name = "sub_total", precision = 12, scale = 2, nullable = false)
     private BigDecimal subTotal = BigDecimal.ZERO;
 
@@ -64,6 +81,10 @@ public class Invoice {
     @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<Payment> payments = new ArrayList<>();
 
+    @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<InvoiceAttachment> attachments = new ArrayList<>();
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getInvoiceNumber() { return invoiceNumber; }
@@ -80,6 +101,16 @@ public class Invoice {
     public void setCurrency(String currency) { this.currency = currency; }
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }
+    public String getBillingAddress() { return billingAddress; }
+    public void setBillingAddress(String billingAddress) { this.billingAddress = billingAddress; }
+    public Terms getTerms() { return terms; }
+    public void setTerms(Terms terms) { this.terms = terms; }
+    public String getTags() { return tags; }
+    public void setTags(String tags) { this.tags = tags; }
+    public String getMessageOnInvoice() { return messageOnInvoice; }
+    public void setMessageOnInvoice(String messageOnInvoice) { this.messageOnInvoice = messageOnInvoice; }
+    public String getMessageOnStatement() { return messageOnStatement; }
+    public void setMessageOnStatement(String messageOnStatement) { this.messageOnStatement = messageOnStatement; }
     public BigDecimal getSubTotal() { return subTotal; }
     public void setSubTotal(BigDecimal subTotal) { this.subTotal = subTotal; }
     public BigDecimal getTaxTotal() { return taxTotal; }
@@ -98,4 +129,6 @@ public class Invoice {
     public void setItems(List<InvoiceItem> items) { this.items = items; }
     public List<Payment> getPayments() { return payments; }
     public void setPayments(List<Payment> payments) { this.payments = payments; }
+    public List<InvoiceAttachment> getAttachments() { return attachments; }
+    public void setAttachments(List<InvoiceAttachment> attachments) { this.attachments = attachments; }
 }
