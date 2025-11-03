@@ -149,7 +149,7 @@ jobs:
         # Check if PostgreSQL addon exists, create if not
         if ! heroku addons:info heroku-postgresql --app invoice-service-staging 2>/dev/null; then
           echo "Adding PostgreSQL addon"
-          heroku addons:create heroku-postgresql:mini --app invoice-service-staging --wait
+          heroku addons:create heroku-postgresql:essential-0 --app invoice-service-staging --wait
         else
           echo "PostgreSQL addon already exists"
         fi
@@ -192,7 +192,7 @@ jobs:
         # Check if PostgreSQL addon exists, create if not
         if ! heroku addons:info heroku-postgresql --app invoice-service-prod 2>/dev/null; then
           echo "Adding PostgreSQL addon"
-          heroku addons:create heroku-postgresql:mini --app invoice-service-prod --wait
+          heroku addons:create heroku-postgresql:essential-0 --app invoice-service-prod --wait
         else
           echo "PostgreSQL addon already exists"
         fi
