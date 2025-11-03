@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main, develop ]
     paths:
-      # Include paths that affect the application
+      # Only trigger on application code changes, not documentation
       - 'invoice-service/src/**'
       - 'invoice-service/ui/**'
       - 'invoice-service/build.gradle'
@@ -16,12 +16,6 @@ on:
       - 'invoice-service/gradle/**'
       - 'invoice-service/gradlew*'
       - '.github/workflows/**'
-    paths-ignore:
-      # Exclude documentation and non-code files
-      - '**.md'
-      - 'invoice-service/docs/**'
-      - 'invoice-service/LICENSE'
-      - 'invoice-service/.gitignore'
       
   pull_request:
     branches: [ main, develop ]
