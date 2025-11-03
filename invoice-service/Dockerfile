@@ -43,9 +43,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
 
 # Run the application
 # Heroku sets PORT env var, we pass it to Spring Boot
-ENTRYPOINT ["sh", "-c", "java \
-    -XX:+UseContainerSupport \
-    -XX:MaxRAMPercentage=75.0 \
-    -Djava.security.egd=file:/dev/./urandom \
-    -Dserver.port=${PORT:-8080} \
-    -jar app.jar"]
+ENTRYPOINT ["sh", "-c", "java -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -Djava.security.egd=file:/dev/./urandom -Dserver.port=${PORT:-8080} -jar app.jar"]
