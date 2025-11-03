@@ -1,4 +1,22 @@
 # Multi-stage build for optimal image size
+# Stage 1: Build UI
+FROM node:18-alpine AS ui-builder
+
+WORKDIR /ui
+
+# Copy UI package files
+COPY ui/package*.json ./
+
+# Install dependencies
+RUN npm ci
+
+# Copy UI source
+COPY ui/ ./
+
+# Build production UI
+RUN npm run build
+
+# Stage 2: Build backend
 FROM eclipse-temurin:21-jdk-alpine AS builder
 
 WORKDIR /app
@@ -11,6 +29,9 @@ COPY settings.gradle .
 
 # Copy source code
 COPY src src
+
+# Copy built UI into static resources
+COPY --from=ui-builder /ui/dist src/main/resources/static/
 
 # Build the application
 RUN chmod +x gradlew && \
