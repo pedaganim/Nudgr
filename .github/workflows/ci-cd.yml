@@ -14,6 +14,9 @@ jobs:
   test:
     name: Run Tests
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: invoice-service
     
     steps:
     - name: Checkout code
@@ -25,6 +28,7 @@ jobs:
         java-version: ${{ env.JAVA_VERSION }}
         distribution: ${{ env.JAVA_DISTRIBUTION }}
         cache: 'gradle'
+        cache-dependency-path: 'invoice-service/gradle/wrapper/gradle-wrapper.properties'
         
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
@@ -37,7 +41,7 @@ jobs:
       uses: dorny/test-reporter@v1
       with:
         name: Test Results
-        path: build/test-results/test/*.xml
+        path: invoice-service/build/test-results/test/*.xml
         reporter: java-junit
         fail-on-error: false
         
@@ -46,13 +50,16 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: test-results
-        path: build/test-results/test/
+        path: invoice-service/build/test-results/test/
         retention-days: 7
 
   build:
     name: Build Application
     needs: test
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: invoice-service
     
     steps:
     - name: Checkout code
@@ -64,6 +71,7 @@ jobs:
         java-version: ${{ env.JAVA_VERSION }}
         distribution: ${{ env.JAVA_DISTRIBUTION }}
         cache: 'gradle'
+        cache-dependency-path: 'invoice-service/gradle/wrapper/gradle-wrapper.properties'
         
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
@@ -75,12 +83,15 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: invoice-service-jar
-        path: build/libs/*.jar
+        path: invoice-service/build/libs/*.jar
         retention-days: 7
 
   code-quality:
     name: Code Quality Check
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: invoice-service
     
     steps:
     - name: Checkout code
@@ -92,6 +103,7 @@ jobs:
         java-version: ${{ env.JAVA_VERSION }}
         distribution: ${{ env.JAVA_DISTRIBUTION }}
         cache: 'gradle'
+        cache-dependency-path: 'invoice-service/gradle/wrapper/gradle-wrapper.properties'
         
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
@@ -207,6 +219,7 @@ jobs:
         heroku_email: ${{ secrets.HEROKU_EMAIL }}
         usedocker: true
         docker_heroku_process_type: web
+        appdir: "invoice-service"
         docker_build_args: |
           SPRING_PROFILES_ACTIVE=prod
         
@@ -243,6 +256,7 @@ jobs:
         heroku_email: ${{ secrets.HEROKU_EMAIL }}
         usedocker: true
         docker_heroku_process_type: web
+        appdir: "invoice-service"
         docker_build_args: |
           SPRING_PROFILES_ACTIVE=prod
         
