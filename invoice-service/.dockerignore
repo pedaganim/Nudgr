@@ -1,0 +1,53 @@
+# Build outputs
+build/
+target/
+out/
+.gradle/
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.classpath
+.project
+.settings/
+
+# Version control
+.git/
+.gitignore
+.gitattributes
+
+# CI/CD
+.github/
+
+# Documentation
+*.md
+docs/
+
+# Test files
+src/test/
+
+# Local environment
+.env
+.env.local
+*.log
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Node modules (for UI)
+ui/node_modules/
+ui/dist/
+ui/build/
+
+# Database files
+*.db
+*.sqlite
+*.h2.db
+
+# Uploads
+uploads/
