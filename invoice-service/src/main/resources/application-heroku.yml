@@ -38,6 +38,17 @@ spring:
   security:
     filter:
       order: 5
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope:
+              - email
+              - profile
+              - https://www.googleapis.com/auth/gmail.send
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
 
 server:
   port: ${PORT:8080}

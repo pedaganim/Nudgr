@@ -21,6 +21,18 @@ spring:
     multipart:
       max-file-size: 10MB
       max-request-size: 10MB
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID:your-client-id-here}
+            client-secret: ${GOOGLE_CLIENT_SECRET:your-client-secret-here}
+            scope:
+              - email
+              - profile
+              - https://www.googleapis.com/auth/gmail.send
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
 
 server:
   port: 8080
