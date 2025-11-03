@@ -74,5 +74,8 @@ export const invoicesApi = {
   },
   async deleteAttachment(attachmentId: number): Promise<void> {
     await api.delete(`/api/attachments/${attachmentId}`)
+  },
+  async sendEmail(invoiceId: number): Promise<void> {
+    await api.post(`/api/invoices/${invoiceId}/send-email`, {}, { withCredentials: true })
   }
 }

@@ -1,11 +1,15 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { invoicesApi, Invoice, InvoiceAttachment } from '../../services/invoices'
+import { useAuth } from '../../contexts/AuthContext'
+import { toast } from 'sonner'
 
 export const InvoiceDetailPage: React.FC = () => {
   const { id } = useParams()
+  const { user, login } = useAuth()
   const [invoice, setInvoice] = useState<Invoice | null>(null)
   const [loading, setLoading] = useState(false)
+  const [sendingEmail, setSendingEmail] = useState(false)
   const [attachments, setAttachments] = useState<InvoiceAttachment[]>([])
 
   useEffect(() => {
@@ -60,13 +64,35 @@ export const InvoiceDetailPage: React.FC = () => {
           >
             Print / Preview
           </button>
-          <button
-            type="button"
-            className="rounded-md border px-3 py-2 hover:bg-gray-50"
-            onClick={() => alert('Email sending will be implemented')}
-          >
-            Send Email
-          </button>
+          {user?.authenticated ? (
+            <button
+              type="button"
+              className="rounded-md border px-3 py-2 hover:bg-gray-50 disabled:opacity-50"
+              disabled={sendingEmail}
+              onClick={async () => {
+                if (!id) return
+                setSendingEmail(true)
+                try {
+                  await invoicesApi.sendEmail(Number(id))
+                  toast.success('Invoice email sent successfully!')
+                } catch (error: any) {
+                  toast.error(error?.response?.data?.message || 'Failed to send email')
+                } finally {
+                  setSendingEmail(false)
+                }
+              }}
+            >
+              {sendingEmail ? 'Sending...' : '📧 Send Email'}
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="rounded-md border border-blue-500 bg-blue-50 px-3 py-2 text-blue-700 hover:bg-blue-100"
+              onClick={login}
+            >
+              🔒 Login to Send Email
+            </button>
+          )}
           <Link to="/" className="rounded-md border px-3 py-2 hover:bg-gray-50">Back</Link>
         </div>
       </div>
