@@ -21,6 +21,7 @@ export const InvoiceCreatePage: React.FC = () => {
   const [billingAddress, setBillingAddress] = useState<string>('')
   const [terms, setTerms] = useState<string>('')
   const [tags, setTags] = useState<string>('') // comma-separated
+  const [attachments, setAttachments] = useState<File[]>([])
   const [items, setItems] = useState<Array<{
     serviceDate?: string
     productOrService?: string
@@ -104,6 +105,14 @@ export const InvoiceCreatePage: React.FC = () => {
         balanceDue: total
       }
       const created = await invoicesApi.create(payload)
+      
+      // Upload attachments if any
+      if (attachments.length > 0) {
+        await Promise.all(
+          attachments.map(file => invoicesApi.uploadAttachment(created.id, file))
+        )
+      }
+      
       navigate(`/invoices/${created.id}`)
     } finally {
       setSaving(false)
@@ -458,6 +467,50 @@ export const InvoiceCreatePage: React.FC = () => {
               <div className="flex justify-between font-medium"><span>Total</span><span>{total.toFixed(2)}</span></div>
             </div>
           </div>
+        </div>
+
+        {/* Attachments */}
+        <div className="space-y-2">
+          <h3 className="text-lg font-medium">Attachments (Optional)</h3>
+          <div>
+            <label className="inline-flex cursor-pointer items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+              <span>📎 Add Files</span>
+              <input
+                type="file"
+                multiple
+                className="hidden"
+                onChange={e => {
+                  if (e.target.files) {
+                    setAttachments(prev => [...prev, ...Array.from(e.target.files!)])
+                  }
+                }}
+                accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"
+              />
+            </label>
+            <p className="mt-1 text-xs text-gray-500">Max 10MB per file. Accepted: images, PDF, Word, Excel</p>
+          </div>
+          {attachments.length > 0 && (
+            <ul className="space-y-2">
+              {attachments.map((file, idx) => (
+                <li key={idx} className="flex items-center justify-between rounded-md border px-3 py-2 text-sm">
+                  <div className="flex items-center gap-2">
+                    <span>📄</span>
+                    <span>{file.name}</span>
+                    <span className="text-xs text-gray-500">
+                      ({(file.size / 1024).toFixed(1)} KB)
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    className="rounded-md border px-2 py-1 text-xs hover:bg-gray-50"
+                    onClick={() => setAttachments(prev => prev.filter((_, i) => i !== idx))}
+                  >
+                    Remove
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
 
         <div className="pt-2">
