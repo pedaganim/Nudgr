@@ -156,7 +156,7 @@ jobs:
         
         # Set environment variables
         heroku config:set \
-          SPRING_PROFILES_ACTIVE=prod \
+          SPRING_PROFILES_ACTIVE=heroku \
           APP_UPLOADS_DIR=/tmp/uploads \
           --app invoice-service-staging
 
@@ -199,7 +199,7 @@ jobs:
         
         # Set environment variables
         heroku config:set \
-          SPRING_PROFILES_ACTIVE=prod \
+          SPRING_PROFILES_ACTIVE=heroku \
           APP_UPLOADS_DIR=/tmp/uploads \
           --app invoice-service-prod
 
@@ -230,7 +230,7 @@ jobs:
         docker_heroku_process_type: web
         appdir: "invoice-service"
         docker_build_args: |
-          SPRING_PROFILES_ACTIVE=prod
+          SPRING_PROFILES_ACTIVE=heroku
         
     # Example: Deploy to AWS (uncomment and configure)
     # - name: Configure AWS credentials
@@ -271,7 +271,7 @@ jobs:
         docker_heroku_process_type: web
         appdir: "invoice-service"
         docker_build_args: |
-          SPRING_PROFILES_ACTIVE=prod
+          SPRING_PROFILES_ACTIVE=heroku
         
     # Example: Deploy via SSH (uncomment and configure)
     # - name: Deploy to Production Server
