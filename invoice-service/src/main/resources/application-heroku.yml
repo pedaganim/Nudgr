@@ -2,10 +2,9 @@ spring:
   application:
     name: invoice-service
 
-  # Heroku provides DATABASE_URL, Spring Boot will auto-parse it
+  # DataSource is configured programmatically in HerokuDataSourceConfig
+  # to handle Heroku's DATABASE_URL format conversion
   datasource:
-    url: ${DATABASE_URL:}
-    driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10
       minimum-idle: 2
