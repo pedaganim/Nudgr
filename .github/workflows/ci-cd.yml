@@ -3,8 +3,29 @@ name: CI/CD Pipeline
 on:
   push:
     branches: [ main, develop ]
+    paths:
+      # Include paths that affect the application
+      - 'invoice-service/src/**'
+      - 'invoice-service/ui/**'
+      - 'invoice-service/build.gradle'
+      - 'invoice-service/settings.gradle'
+      - 'invoice-service/Dockerfile'
+      - 'invoice-service/docker-compose.yml'
+      - 'invoice-service/heroku.yml'
+      - 'invoice-service/.dockerignore'
+      - 'invoice-service/gradle/**'
+      - 'invoice-service/gradlew*'
+      - '.github/workflows/**'
+    paths-ignore:
+      # Exclude documentation and non-code files
+      - '**.md'
+      - 'invoice-service/docs/**'
+      - 'invoice-service/LICENSE'
+      - 'invoice-service/.gitignore'
+      
   pull_request:
     branches: [ main, develop ]
+    # Run tests on all PRs regardless of paths
 
 permissions:
   contents: read
