@@ -75,7 +75,7 @@ git push origin main
 2. ✅ **Build** - Creates JAR file
 3. ✅ **Setup Infrastructure** - Creates/configures Heroku app automatically:
    - Creates `invoice-service-prod` (if doesn't exist)
-   - Adds PostgreSQL mini addon
+   - Adds PostgreSQL essential-0 addon
    - Sets container stack
    - Configures environment variables
 4. ✅ **Deploy** - Deploys to Heroku production
@@ -263,7 +263,7 @@ Add to the setup job:
 ### Example: Change PostgreSQL Plan
 
 Change line 135 (staging) or 178 (production):
-```yaml
+```bash
 heroku addons:create heroku-postgresql:standard-0 --app invoice-service-prod --wait
 ```
 
@@ -271,6 +271,7 @@ heroku addons:create heroku-postgresql:standard-0 --app invoice-service-prod --w
 
 ## Benefits of Automated Setup
 
+### **Zero Manual Steps**
 ### ✅ **Zero Manual Steps**
 No need to remember Heroku CLI commands
 
