@@ -4,31 +4,22 @@ on:
   push:
     branches: [ main, develop ]
     paths:
-      # Only trigger on application code changes, not documentation
-      - 'invoice-service/src/**'
-      - 'invoice-service/ui/**'
-      - 'invoice-service/build.gradle'
-      - 'invoice-service/settings.gradle'
-      - 'invoice-service/Dockerfile'
-      - 'invoice-service/docker-compose.yml'
-      - 'invoice-service/heroku.yml'
-      - 'invoice-service/.dockerignore'
-      - 'invoice-service/gradle/**'
-      - 'invoice-service/gradlew*'
+      - 'invoice-service/**'
       - '.github/workflows/**'
-      
   pull_request:
     branches: [ main, develop ]
-    # Run tests on all PRs regardless of paths
 
 permissions:
   contents: read
   checks: write
   pull-requests: write
+  id-token: write # Required for Workload Identity Federation
 
 env:
   JAVA_VERSION: '21'
   JAVA_DISTRIBUTION: 'temurin'
+  GCP_REGION: australia-southeast1 # Update this if needed
+  REPOSITORY: nudgr-repo # Update this to your Artifact Registry repository name
 
 jobs:
   test:
@@ -64,237 +55,100 @@ jobs:
         path: invoice-service/build/test-results/test/*.xml
         reporter: java-junit
         fail-on-error: false
-        
-    - name: Upload test results
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: test-results
-        path: invoice-service/build/test-results/test/
-        retention-days: 7
 
-  build:
-    name: Build Application
+  build-and-push:
+    name: Build & Push Container
     needs: test
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: invoice-service
+    if: github.event_name == 'push'
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
-    - name: Set up JDK 21
-      uses: actions/setup-java@v4
-      with:
-        java-version: ${{ env.JAVA_VERSION }}
-        distribution: ${{ env.JAVA_DISTRIBUTION }}
-        cache: 'gradle'
-        cache-dependency-path: 'invoice-service/gradle/wrapper/gradle-wrapper.properties'
-        
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
-      
-    - name: Build with Gradle
-      run: ./gradlew build -x test --no-daemon
-      
-    - name: Upload build artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: invoice-service-jar
-        path: invoice-service/build/libs/*.jar
-        retention-days: 7
 
-  code-quality:
-    name: Code Quality Check
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: invoice-service
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Set up JDK 21
-      uses: actions/setup-java@v4
+    - name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v2
       with:
-        java-version: ${{ env.JAVA_VERSION }}
-        distribution: ${{ env.JAVA_DISTRIBUTION }}
-        cache: 'gradle'
-        cache-dependency-path: 'invoice-service/gradle/wrapper/gradle-wrapper.properties'
-        
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
-      
-    - name: Check code formatting (if Spotless configured)
-      run: ./gradlew spotlessCheck --no-daemon || echo "Spotless not configured, skipping"
-      continue-on-error: true
+        workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+        service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
 
-  setup-heroku-staging:
-    name: Setup Heroku Staging Infrastructure
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
-    
-    steps:
-    - name: Install Heroku CLI
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v2
+
+    - name: Configure Docker for Artifact Registry
       run: |
-        curl https://cli-assets.heroku.com/install.sh | sh
-        
-    - name: Setup Heroku Staging App
+        gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev
+
+    - name: Build and Push Docker Image
       env:
-        HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-        HEROKU_EMAIL: ${{ secrets.HEROKU_EMAIL }}
+        IMAGE_TAG: ${{ github.sha }}
+        ENV_TAG: ${{ github.ref == 'refs/heads/main' && 'prod' || 'staging' }}
       run: |
-        # Login to Heroku
-        echo "$HEROKU_API_KEY" | heroku auth:token
-        
-        # Check if app exists, create if not
-        if ! heroku apps:info --app invoice-service-staging 2>/dev/null; then
-          echo "Creating Heroku app: invoice-service-staging"
-          heroku create invoice-service-staging
-        else
-          echo "App invoice-service-staging already exists"
-        fi
-        
-        # Set stack to container
-        heroku stack:set container --app invoice-service-staging
-        
-        # Check if PostgreSQL addon exists, create if not
-        if ! heroku addons:info heroku-postgresql --app invoice-service-staging 2>/dev/null; then
-          echo "Adding PostgreSQL addon"
-          heroku addons:create heroku-postgresql:essential-0 --app invoice-service-staging --wait
-        else
-          echo "PostgreSQL addon already exists"
-        fi
-        
-        # Set environment variables
-        heroku config:set \
-          SPRING_PROFILES_ACTIVE=heroku \
-          APP_UPLOADS_DIR=/tmp/uploads \
-          --app invoice-service-staging
-
-  setup-heroku-production:
-    name: Setup Heroku Production Infrastructure
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    
-    steps:
-    - name: Install Heroku CLI
-      run: |
-        curl https://cli-assets.heroku.com/install.sh | sh
-        
-    - name: Setup Heroku Production App
-      env:
-        HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-        HEROKU_EMAIL: ${{ secrets.HEROKU_EMAIL }}
-      run: |
-        # Login to Heroku
-        echo "$HEROKU_API_KEY" | heroku auth:token
-        
-        # Check if app exists, create if not
-        if ! heroku apps:info --app invoice-service-prod 2>/dev/null; then
-          echo "Creating Heroku app: invoice-service-prod"
-          heroku create invoice-service-prod
-        else
-          echo "App invoice-service-prod already exists"
-        fi
-        
-        # Set stack to container
-        heroku stack:set container --app invoice-service-prod
-        
-        # Check if PostgreSQL addon exists, create if not
-        if ! heroku addons:info heroku-postgresql --app invoice-service-prod 2>/dev/null; then
-          echo "Adding PostgreSQL addon"
-          heroku addons:create heroku-postgresql:essential-0 --app invoice-service-prod --wait
-        else
-          echo "PostgreSQL addon already exists"
-        fi
-        
-        # Set environment variables
-        heroku config:set \
-          SPRING_PROFILES_ACTIVE=heroku \
-          APP_UPLOADS_DIR=/tmp/uploads \
-          --app invoice-service-prod
+        docker build -t ${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.REPOSITORY }}/invoice-service:${{ env.IMAGE_TAG }} \
+                     -t ${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.REPOSITORY }}/invoice-service:${{ env.ENV_TAG }} \
+                     -f invoice-service/Dockerfile .
+        docker push ${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.REPOSITORY }}/invoice-service --all-tags
 
   deploy-staging:
-    name: Deploy to Staging
-    needs: [test, build, setup-heroku-staging]
+    name: Deploy to Cloud Run (Staging)
+    needs: build-and-push
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
     environment:
       name: staging
-      url: https://invoice-service-staging.herokuapp.com
+      url: ${{ steps.deploy.outputs.url }}
     
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Install Heroku CLI
-      run: |
-        curl https://cli-assets.heroku.com/install.sh | sh
-      
-    - name: Deploy to Heroku Staging
-      uses: akhileshns/heroku-deploy@v3.13.15
+    - name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v2
       with:
-        heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
-        heroku_app_name: "invoice-service-staging"
-        heroku_email: ${{ secrets.HEROKU_EMAIL }}
-        usedocker: true
-        docker_heroku_process_type: web
-        appdir: "invoice-service"
-        docker_build_args: |
-          SPRING_PROFILES_ACTIVE=heroku
-        
-    # Example: Deploy to AWS (uncomment and configure)
-    # - name: Configure AWS credentials
-    #   uses: aws-actions/configure-aws-credentials@v4
-    #   with:
-    #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-    #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-    #     aws-region: us-east-1
-    #
-    # - name: Deploy to AWS Elastic Beanstalk
-    #   run: |
-    #     eb deploy invoice-service-staging
+        workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+        service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+    - name: Deploy to Cloud Run
+      id: deploy
+      uses: google-github-actions/deploy-cloudrun@v2
+      with:
+        service: invoice-service-staging
+        region: ${{ env.GCP_REGION }}
+        image: ${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.REPOSITORY }}/invoice-service:${{ github.sha }}
+        env_vars: |
+          SPRING_PROFILES_ACTIVE=prod
+          APP_UPLOADS_DIR=/tmp/uploads
+        secrets: |
+          SPRING_DATASOURCE_URL=DB_URL:latest
+          SPRING_DATASOURCE_USERNAME=DB_USER:latest
+          SPRING_DATASOURCE_PASSWORD=DB_PASS:latest
+        flags: '--allow-unauthenticated' # Optional: remove if you want private access
 
   deploy-production:
-    name: Deploy to Production
-    needs: [test, build, setup-heroku-production]
+    name: Deploy to Cloud Run (Production)
+    needs: build-and-push
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     environment:
       name: production
-      url: https://invoice-service-prod.herokuapp.com
+      url: ${{ steps.deploy.outputs.url }}
     
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Install Heroku CLI
-      run: |
-        curl https://cli-assets.heroku.com/install.sh | sh
-      
-    - name: Deploy to Heroku Production
-      uses: akhileshns/heroku-deploy@v3.13.15
+    - name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v2
       with:
-        heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
-        heroku_app_name: "invoice-service-prod"
-        heroku_email: ${{ secrets.HEROKU_EMAIL }}
-        usedocker: true
-        docker_heroku_process_type: web
-        appdir: "invoice-service"
-        docker_build_args: |
-          SPRING_PROFILES_ACTIVE=heroku
-        
-    # Example: Deploy via SSH (uncomment and configure)
-    # - name: Deploy to Production Server
-    #   uses: appleboy/ssh-action@v1.0.0
-    #   with:
-    #     host: ${{ secrets.PROD_HOST }}
-    #     username: ${{ secrets.PROD_USERNAME }}
-    #     key: ${{ secrets.PROD_SSH_KEY }}
-    #     script: |
-    #       cd /opt/invoice-service
-    #       ./deploy.sh
+        workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+        service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+    - name: Deploy to Cloud Run
+      id: deploy
+      uses: google-github-actions/deploy-cloudrun@v2
+      with:
+        service: invoice-service-prod
+        region: ${{ env.GCP_REGION }}
+        image: ${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.REPOSITORY }}/invoice-service:${{ github.sha }}
+        env_vars: |
+          SPRING_PROFILES_ACTIVE=prod
+          APP_UPLOADS_DIR=/tmp/uploads
+        secrets: |
+          SPRING_DATASOURCE_URL=DB_URL:latest
+          SPRING_DATASOURCE_USERNAME=DB_USER:latest
+          SPRING_DATASOURCE_PASSWORD=DB_PASS:latest
+
