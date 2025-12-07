@@ -175,6 +175,23 @@ gcloud secrets create DB_PASS --data-file=-
 
 **Important**: Make sure the `invoice-service-prod` Cloud Run service (once created) or the Service Account has `roles/cloudsql.client`.
 
+**Important**: The **Cloud Run service** itself needs access to these secrets. By default, Cloud Run uses the Compute Engine default service account.
+
+```bash
+# Get your project number
+export PROJECT_NUMBER=$(gcloud projects describe $PROJECT_ID --format="value(projectNumber)")
+
+# Grant Secret Manager Accessor to the Cloud Run default service account
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+  --member="serviceAccount:${PROJECT_NUMBER}-compute@developer.gserviceaccount.com" \
+  --role="roles/secretmanager.secretAccessor"
+
+# Grant Cloud SQL Client role (if not already present)
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+  --member="serviceAccount:${PROJECT_NUMBER}-compute@developer.gserviceaccount.com" \
+  --role="roles/cloudsql.client"
+```
+
 ## 7. GitHub Repository Secrets
 
 Go to your GitHub Repository -> Settings -> Secrets and variables -> Actions -> **New repository secret**.
