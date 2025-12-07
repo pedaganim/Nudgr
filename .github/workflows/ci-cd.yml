@@ -86,7 +86,7 @@ jobs:
       run: |
         docker build -t ${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.REPOSITORY }}/invoice-service:${{ env.IMAGE_TAG }} \
                      -t ${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.REPOSITORY }}/invoice-service:${{ env.ENV_TAG }} \
-                     -f invoice-service/Dockerfile .
+                     invoice-service
         docker push ${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.REPOSITORY }}/invoice-service --all-tags
 
   deploy-staging:
