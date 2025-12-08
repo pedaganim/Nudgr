@@ -119,6 +119,8 @@ jobs:
           SPRING_DATASOURCE_URL=DB_URL:latest
           SPRING_DATASOURCE_USERNAME=DB_USER:latest
           SPRING_DATASOURCE_PASSWORD=DB_PASS:latest
+          GOOGLE_CLIENT_ID=GOOGLE_CLIENT_ID:latest
+          GOOGLE_CLIENT_SECRET=GOOGLE_CLIENT_SECRET:latest
         flags: '--allow-unauthenticated' # Optional: remove if you want private access
 
   deploy-production:
@@ -151,4 +153,5 @@ jobs:
           SPRING_DATASOURCE_URL=DB_URL:latest
           SPRING_DATASOURCE_USERNAME=DB_USER:latest
           SPRING_DATASOURCE_PASSWORD=DB_PASS:latest
-
+          GOOGLE_CLIENT_ID=GOOGLE_CLIENT_ID:latest
+          GOOGLE_CLIENT_SECRET=GOOGLE_CLIENT_SECRET:latest
