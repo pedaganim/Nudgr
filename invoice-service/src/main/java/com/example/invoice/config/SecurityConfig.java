@@ -13,6 +13,10 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.client.JdbcOAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
  * Security configuration with Google OAuth2 authentication.
@@ -25,42 +29,45 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable())
-            .cors(Customizer.withDefaults())
-            .authorizeHttpRequests(auth -> auth
-                // Public endpoints - no authentication required
-                .requestMatchers(
-                    "/",
-                    "/index.html",
-                    "/assets/**",
-                    "/api/auth/**",
-                    "/actuator/health",
-                    "/h2-console/**",
-                    "/login/**",
-                    "/oauth2/**",
-                    "/error"
-                ).permitAll()
-                // Most API endpoints are public for now (backward compatibility)
-                .requestMatchers("/api/invoices/**", "/api/customers/**", "/api/attachments/**").permitAll()
-                // Email sending requires authentication
-                .requestMatchers("/api/invoices/*/send-email").authenticated()
-                .anyRequest().permitAll()
-            )
-            .oauth2Login(oauth2 -> oauth2
-                .defaultSuccessUrl("/", true)
-                .failureUrl("/login?error=true")
-            )
-            .logout(logout -> logout
-                .logoutSuccessUrl("/")
-                .invalidateHttpSession(true)
-                .deleteCookies("JSESSIONID")
-            )
-            .exceptionHandling(exceptions -> exceptions
-                .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
-            )
-            .headers(headers -> headers.frameOptions(frame -> frame.disable()));
-        
+                .csrf(csrf -> csrf.disable())
+                .cors(Customizer.withDefaults())
+                .authorizeHttpRequests(auth -> auth
+                        // Public endpoints - no authentication required
+                        .requestMatchers(
+                                "/",
+                                "/index.html",
+                                "/assets/**",
+                                "/api/auth/**",
+                                "/actuator/health",
+                                "/h2-console/**",
+                                "/login/**",
+                                "/oauth2/**",
+                                "/error")
+                        .permitAll()
+                        // Most API endpoints are public for now (backward compatibility)
+                        .requestMatchers("/api/invoices/**", "/api/customers/**", "/api/attachments/**").permitAll()
+                        // Email sending requires authentication
+                        .requestMatchers("/api/invoices/*/send-email").authenticated()
+                        .anyRequest().permitAll())
+                .oauth2Login(oauth2 -> oauth2
+                        .defaultSuccessUrl("/", true)
+                        .failureUrl("/login?error=true"))
+                .logout(logout -> logout
+                        .logoutSuccessUrl("/")
+                        .invalidateHttpSession(true)
+                        .deleteCookies("JSESSIONID"))
+                .exceptionHandling(exceptions -> exceptions
+                        .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
+                .headers(headers -> headers.frameOptions(frame -> frame.disable()));
+
         return http.build();
+    }
+
+    @Bean
+    public OAuth2AuthorizedClientService authorizedClientService(
+            JdbcTemplate jdbcTemplate,
+            ClientRegistrationRepository clientRegistrationRepository) {
+        return new JdbcOAuth2AuthorizedClientService(jdbcTemplate, clientRegistrationRepository);
     }
 
     @Bean
