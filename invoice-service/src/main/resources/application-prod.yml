@@ -81,7 +81,7 @@ app:
 logging:
   level:
     root: INFO
-    com.example.invoice: INFO
+    com.code.invoice: INFO
     org.springframework.web: INFO
     org.hibernate: WARN
   pattern:

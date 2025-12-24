@@ -172,7 +172,7 @@ docker-compose up --build
 ./gradlew test
 
 # Run domain entity tests only
-./gradlew test --tests "com.example.invoice.model.*"
+./gradlew test --tests "com.code.invoice.model.*"
 
 # Run with coverage report (after JaCoCo setup)
 ./gradlew test jacocoTestReport
@@ -184,7 +184,7 @@ docker-compose up --build
 invoice-service/
 ├── src/
 │   ├── main/
-│   │   ├── java/com/example/invoice/
+│   │   ├── java/com.code.invoice/
 │   │   │   ├── controller/       # REST controllers
 │   │   │   ├── model/            # Domain entities
 │   │   │   ├── repository/       # JPA repositories
@@ -195,7 +195,7 @@ invoice-service/
 │   │       ├── application-prod.yml
 │   │       └── db/migration/     # Flyway migrations
 │   └── test/
-│       └── java/com/example/invoice/
+│       └── java/com.code.invoice/
 │           └── model/            # Entity unit tests
 ├── ui/                           # React frontend
 │   ├── src/

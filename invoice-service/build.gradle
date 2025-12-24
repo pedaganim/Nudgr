@@ -10,7 +10,7 @@ java {
     }
 }
 
-group = 'com.example'
+group = 'com.code'
 version = '0.0.1-SNAPSHOT'
 
 repositories {
